@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Windows.Storage;
 using System.IO;
 using Windows.UI.Xaml.Shapes;
+using ImageMagick;
 
 namespace Win32Printer
 {
@@ -16,18 +17,32 @@ namespace Win32Printer
     {
         static void Main(string[] args)
         {
+
+            var settings = new MagickReadSettings
+            {
+                Density = new Density(300)
+            };
+            var images = new MagickImageCollection();
             AutoResetEvent resetEvent = new AutoResetEvent(false);
             if (ApplicationData.Current.LocalSettings.Values.ContainsKey("FileToPrint"))
             {
                 // Image img = Image.FromFile(ApplicationData.Current.LocalSettings.Values["FileToPrint"] as string);
-                FileStream fs = new FileStream(@"C:\test.pdf", FileMode.Open);
-                Image img = Image.FromStream(fs);
+                //FileStream fs = new FileStream(@"C:\test.pdf", FileMode.Open);
+                //Image img = Image.FromStream(fs);
+                Image img = Image.from
+                images.Read(@"C:\test.pdf", settings);
+
                 PrintDocument doc = new PrintDocument();
                 doc.PrintPage += new PrintPageEventHandler((sender, e)=>
                 {
-                    img = ResizeImage(img, e.Graphics.VisibleClipBounds.Size);
-                    e.Graphics.DrawImage(img, Point.Empty);
-                    e.HasMorePages = false;
+                    foreach(var image in images)
+                    {
+                        
+                        image = ResizeImage(image, e.Graphics.VisibleClipBounds.Size);
+                        e.Graphics.DrawImage(image, Point.Empty);
+                        e.HasMorePages = false;
+                    }
+                    
                 });
                 doc.EndPrint += new PrintEventHandler((sender, e) =>
                 {
